@@ -17,12 +17,18 @@ import CategoryScreen from './screens/CategoryScreen';
 import ProductScreen from './screens/ProductScreen';
 import DrawerContent from './components/drawer/DrawerContent';
 import Authentication from './components/Authentication';
+import CartScreen from './screens/CartScreen';
+import CheckoutScreen from './screens/CheckoutScreen';
+import LoginScreen from './screens/LoginScreen';
+import SignupScreen from './screens/SignupScreen';
+import OrdersScreen from './screens/OrdersScreen';
+import SearchScreen from './screens/SearchScreen';
 // import {Platform, StyleSheet, Text, View} from 'react-native';
 
 // Simple component to render something in place of icon
 const TabIcon = ({ selected, title }) => {
-  var icon = (function(title) {  
-    switch(title) {
+  var icon = (function (title) {
+    switch (title) {
       case 'Home':
         return 'home';
       case 'Cart':
@@ -33,9 +39,9 @@ const TabIcon = ({ selected, title }) => {
         return '';
     }
   })(title);
-  
+
   return (
-    <Icon name={icon}/>
+    <Icon name={icon} />
   );
 }
 
@@ -44,36 +50,28 @@ const App = () => {
     <Router navigationBarStyle={styles.navBar}>
       <Lightbox key="lightbox">
         <Scene key="root" title="QuickBuy">
-          <Scene
-            component={Authentication}
-            hideNavBar
-            // initial
-            key='Authentication'
-            title='Authentication'
-          />
-          {/* <Stack>
-            <Scene key="loginScreen"></Scene>
-            <Scene key="registerScreen"></Scene>
-          </Stack> */}
+          <Stack hideNavBar key="unauthScreen">
+            <Scene
+              key="loginScreen"
+              inital
+              component={LoginScreen}></Scene>
+            <Scene
+              key="signupScreen"
+              component={SignupScreen}></Scene>
+          </Stack>
           <Drawer
             hideNavBar
-            initial
-            key="drawer"
-            onExit={() => {
-              console.log('Drawer closed');
-            }}
-            onEnter={() => {
-              console.log('Drawer opened');
-            }}
+            key="authScreen"
             contentComponent={DrawerContent}
-            // drawerImage={MenuIcon}
             drawerWidth={300}
+            drawerIcon={<Icon name='menu' size={28}/>}
           >
             <Scene hideNavBar panHandlers={null}>
               {/* Tab Container */}
               <Tabs
                 key="tabbar"
                 backToInitial
+                lazy
                 tabBarStyle={{ backgroundColor: '#FFFFFF' }}
               >
                 {/* Tab and it's scenes */}
@@ -100,27 +98,30 @@ const App = () => {
                 </Stack>
 
                 {/* Tab and it's scenes */}
-                <Scene key="cartTab" title="Cart" icon={TabIcon}>
+                <Scene key="cartTab" icon={TabIcon} title="Cart">
                   <Scene
-                    key="blue"
-                    component={HomeScreen}
+                    key="cartScreen"
+                    component={CartScreen}
+                    title="Cart"
                   />
                   <Scene
-                    key="maize"
-                    component={StoreScreen}
-                    title="Maize"
+                    key="checkoutScreen"
+                    component={CheckoutScreen}
+                    title="Checkout"
+                    back
+                  />
+                  <Scene
+                    key="ordersScreen"
+                    component={OrdersScreen}
+                    title="Orders"
                   />
                 </Scene>
 
                 {/* Tab and it's scenes */}
                 <Scene key="searchTab" title="Search" icon={TabIcon}>
                   <Scene
-                    key="gold"
-                    component={HomeScreen}
-                  />
-                  <Scene
-                    key="black"
-                    component={StoreScreen}
+                    key="searchScreen"
+                    component={SearchScreen}
                   />
                 </Scene>
               </Tabs>

@@ -4,7 +4,8 @@ import {
   Image,
   ScrollView,
   View,
-  AsyncStorage
+  AsyncStorage,
+  ToastAndroid,
 } from 'react-native';
 import { Text, Card, List, ListItem, Button } from 'react-native-elements';
 import { Actions } from 'react-native-router-flux'; // New code
@@ -12,6 +13,7 @@ import products from '../assets/productnames';
 import { Col, Grid } from 'native-base';
 import NumericInput from 'react-native-numeric-input';
 import update from 'immutability-helper';
+import _ from 'lodash';
 
 function getIcon(store) {
   switch (store) {
@@ -35,11 +37,12 @@ class ProductScreen extends Component {
     super(props);
     let mainPrice;
     if (this.props.storeName) {
-      mainPrice = this.props.data.price.find((item) => item.store == this.props.storeName.toLowerCase().replace(' ', '_'))
+      mainStore = this.props.storeName.toLowerCase().replace(' ', '_');
+      mainPrice = this.props.data.price.find((item) => item.store == mainStore)
       if (mainPrice == undefined) {
-        mainPrice = this.props.data.price[0]
+        mainPrice = _.clone(this.props.data.price[0])
+        mainPrice.store = mainStore
       }
-      mainStore = this.props.storeName
     } else {
       let minPrice = this.props.data.price[0];
       for (let i = 1; i < this.props.data.price.length; i++) {
@@ -59,9 +62,11 @@ class ProductScreen extends Component {
 
   componentWillMount() {
     let counts = {};
-    for (const price of this.props.data.price) {
-      counts[price.store] = 10
+    for (const price of this.state.otherStores) {
+      counts[price.store] = { price: price, quantity: 0 }
     }
+    counts[this.state.mainPrice.store] = { price: this.state.mainPrice, quantity: 0}
+    this.setState({ counts: counts })
   }
 
   render() {
@@ -91,8 +96,8 @@ class ProductScreen extends Component {
             </Col>
             <Col>
               <NumericInput
-                initValue={this.state.counts[this.state.mainPrice.store]}
-                value={this.state.counts[this.state.mainPrice.store]}
+                initValue={this.state.counts[this.state.mainPrice.store].quantity}
+                value={this.state.counts[this.state.mainPrice.store].quantity}
                 onChange={value => this.updateCounts(this.state.mainPrice, value)}
                 minValue={0}></NumericInput>
             </Col>
@@ -122,8 +127,8 @@ class ProductScreen extends Component {
                   rightIcon={
                     <View>
                       <NumericInput
-                        initValue={this.state.counts[item.store]}
-                        value={this.state.counts[item.store]}
+                        initValue={this.state.counts[item.store].quantity}
+                        value={this.state.counts[item.store].quantity}
                         onChange={value => this.updateCounts(item, value)}
                         minValue={0}></NumericInput>
                     </View>
@@ -147,7 +152,8 @@ class ProductScreen extends Component {
 
   updateCounts(item, value) {
     this.setState({
-      counts: update(this.state.counts, { [item.store]: { $set: value } })
+      counts: update(this.state.counts, 
+        { [item.store]: { quantity: { $set: value } } })
     })
     return true;
   }
@@ -155,26 +161,37 @@ class ProductScreen extends Component {
   async addToCart() {
     const counts = this.state.counts;
     const item = this.props.title;
-    let cart = await AsyncStorage.getItem('cart')
-    if (cart != null) {
-      cart = JSON.parse(cart);
-    } else {
+    let cart = {};
+    try {
+      cart = await AsyncStorage.getItem('cart')
+      if (cart !== null) {
+        cart = JSON.parse(cart);
+      } else {
+        cart = {}
+      }
+    } catch (error) {
       cart = {}
     }
-    for (const [store, value] of counts) {
+    for (const [store, value] of Object.entries(counts)) {
+      if (value.quantity <= 0) {
+        continue;
+      }
       if (!cart[store]) {
         cart[store] = {}
       }
       if (!cart[store][item]) {
         cart[store][item] = value;
       } else {
-        cart[store][item] += value;
+        cart[store][item].quantity += value.quantity;
       }
     }
-    await AsyncStorage.setItem('cart', JSON.stringify(cart));
-    console.log(cart);
+    try {
+      await AsyncStorage.setItem('cart', JSON.stringify(cart));
+    } catch (error) {
+      console.log("Error saving data " + error)
+    }
+    ToastAndroid.show('The item has been added to your cart!', 3000);
   }
-
 }
 
 const styles = StyleSheet.create({

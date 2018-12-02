@@ -56,7 +56,7 @@ class StoreScreen extends Component {
     for (const [key, category] of Object.entries(products)) {
       categories.push(
         <Card key={key}
-          title={key.toUpperCase()}
+          title={key}
           containerStyle={styles.card}
           titleStyle={styles.cardTitle}
           dividerStyle={{ display: 'none', margin: 0, padding: 0 }}
@@ -74,7 +74,7 @@ class StoreScreen extends Component {
         return (
           <TouchableHighlight key={i}
             underlayColor='#FAFAFA'
-            onPress={() => Actions.productScreen({ title: item.name, data: item })}
+            onPress={() => Actions.productScreen({ title: item.name, data: item, storeName: this.props.data.name })}
           >
             <View style={styles.listCard}>
               <Image

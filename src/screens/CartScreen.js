@@ -8,6 +8,7 @@ import { Alert, AsyncStorage } from 'react-native';
 import { Card } from 'react-native-elements';
 import { Text, Container, Content, View, Header, Icon, Button, Left, Right, Body, Title, List, ListItem, Thumbnail, Grid, Col } from 'native-base';
 import { Actions } from 'react-native-router-flux';
+import _ from 'lodash';
 
 export default class CartScreen extends Component {
   constructor(props) {
@@ -15,14 +16,22 @@ export default class CartScreen extends Component {
     this.state = {
       cartItems: {},
       total: 0,
+      refreshed: false,
     };
   }
 
-  static getDerivedStateFromProps(nextProps, prevState) {
-    return {
-      cartItems: nextProps.cartItems || {},
-      total: nextProps.total || 0,
-    };
+  static getDerivedStateFromProps(nextProps, state) {
+    if (state.refreshed) {
+      return {
+        cartItems: state.cartItems || {},
+        total: state.total || 0,
+      };
+    } else {
+      return {
+        cartItems: nextProps.cartItems || {},
+        total: nextProps.total || 0,
+      };
+    }
   }
 
   static onEnter(props) {
@@ -114,7 +123,7 @@ export default class CartScreen extends Component {
         i++;
         items.push(
           <ListItem
-            key={item}
+            key={store + '-' + item}
             last={length === i + 1}
           >
             {/* <Thumbnail square style={{ width: 110, height: 90 }} source={{ uri: item.image }} /> */}
@@ -142,7 +151,7 @@ export default class CartScreen extends Component {
   removeItemPressed(store, item) {
     Alert.alert(
       'Remove ' + item,
-      'Are you sure you want this item from your cart ?',
+      'Are you sure you want to remove this item from your cart ?',
       [
         { text: 'No', onPress: () => console.log('No Pressed'), style: 'cancel' },
         { text: 'Yes', onPress: () => this.removeItem(store, item) },
@@ -151,20 +160,17 @@ export default class CartScreen extends Component {
   }
 
   removeItem(store, itemToRemove) {
-    if (Object.keys(this.state.cartItems[store]).length <= 1) {
-      delete this.state.cartItems[store]
+    let copy = _.cloneDeep(this.state.cartItems);
+    const removedItem = copy[store][itemToRemove];
+    if (Object.keys(copy[store]).length <= 1) {
+      delete copy[store]
     } else {
-      delete this.state.cartItems[store][itemToRemove]
+      delete copy[store][itemToRemove]
     }
-    this.setState({ cartItems: this.state.cartItems });
-    let total = 0;
-    for (const [store, products] of Object.entries(this.state.cartItems)) {
-      for (const [item, itemdetail] of Object.entries(products)) {
-        total += (itemdetail.quantity * itemdetail.price.unitPrice);
-      }
-    }
-    this.setState({ total: total });
-    AsyncStorage.setItem("cart", JSON.stringify(this.state.cartItems));
+    let total = this.state.total - (removedItem.price.unitPrice * removedItem.quantity);
+    AsyncStorage.setItem("cart", JSON.stringify(copy));
+    this.setState({ cartItems: copy, total: total.toFixed(2), refreshed: true });
+    this.forceUpdate();
   }
 
   removeAllPressed() {
@@ -179,7 +185,7 @@ export default class CartScreen extends Component {
   }
 
   removeAll() {
-    this.setState({ cartItems: {}, total: 0 })
+    this.setState({ cartItems: {}, total: 0, refreshed: true })
     AsyncStorage.setItem("cart", JSON.stringify({}));
   }
 

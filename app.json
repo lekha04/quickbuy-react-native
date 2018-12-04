@@ -2,7 +2,7 @@
   "name": "quickbuy",
   "displayName": "quickbuy",
   "expo": {
-    "name": "Quickbuy",
+    "name": "quickbuy",
     "slug": "quickbuy",
     "sdkVersion": "31.0.0",
     "privacy": "unlisted",

@@ -156,7 +156,7 @@ const menusSecondaryItems = [
   },
   {
     id: 123,
-    title: 'Refresh',
+    title: 'DONT PRESS',
     icon: 'refresh',
     key: 'refresh'
   }

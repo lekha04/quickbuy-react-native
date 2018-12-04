@@ -14,30 +14,22 @@ export default class CartScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      cartItems: {},
-      total: 0,
-      refreshed: false,
+      cartItems: undefined,
+      total: undefined,
     };
   }
 
   static getDerivedStateFromProps(nextProps, state) {
-    if (state.refreshed) {
-      return {
-        cartItems: state.cartItems || {},
-        total: state.total || 0,
-      };
-    } else {
-      return {
-        cartItems: nextProps.cartItems || {},
-        total: nextProps.total || 0,
-      };
-    }
+    return {
+      cartItems: state.cartItems || nextProps.cartItems || {},
+      total: state.total || nextProps.total || 0,
+    };
   }
 
   static onEnter(props) {
     AsyncStorage.getItem("cart", (err, res) => {
       if (!res) {
-        Actions.refresh({ cartItems: {}, total: 0 });
+        Actions.refresh({ cartItems: {}, total: 0, date: new Date() });
         return
       }
       let total = 0;
@@ -47,7 +39,7 @@ export default class CartScreen extends Component {
           total += (itemdetail.quantity * itemdetail.price.unitPrice);
         }
       }
-      Actions.refresh({ cartItems: items, total: total.toFixed(2) });
+      Actions.refresh({ cartItems: items, total: total.toFixed(2), date: new Date() });
     });
   }
 

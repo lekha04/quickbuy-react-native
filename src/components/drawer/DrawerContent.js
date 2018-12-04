@@ -104,7 +104,7 @@ class DrawerContent extends React.Component {
       }
       case 'refresh': {
         AsyncStorage.clear();
-        Actions.reset('loginScreen');
+        Actions.jump('loginScreen');
       }
       default:
         console.log('key pressed: ' + key);

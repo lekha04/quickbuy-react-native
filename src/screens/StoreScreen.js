@@ -56,7 +56,7 @@ class StoreScreen extends Component {
     for (const [key, category] of Object.entries(products)) {
       categories.push(
         <Card key={key}
-          title={key}
+          title={key.toUpperCase()}
           containerStyle={styles.card}
           titleStyle={styles.cardTitle}
           dividerStyle={{ display: 'none', margin: 0, padding: 0 }}

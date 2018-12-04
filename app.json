@@ -1,4 +1,11 @@
 {
   "name": "quickbuy",
-  "displayName": "quickbuy"
+  "displayName": "quickbuy",
+  "expo": {
+    "name": "Quickbuy",
+    "slug": "quickbuy",
+    "sdkVersion": "31.0.0",
+    "privacy": "unlisted",
+    "platforms": ["android"]
+  }
 }

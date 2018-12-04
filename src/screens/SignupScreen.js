@@ -95,21 +95,23 @@ export default class SignupScreen extends Component {
       return;
     }
     this.setState({ hasError: false });
-    AsyncStorage.setItem('user/' + this.state.username, JSON.stringify({
+    const data = JSON.stringify({
       username: this.state.username,
       password: this.state.password,
       email: this.state.email,
       address: this.state.address,
       name: this.state.name,
-    })).then(err => {
-      if (err) {
-        console.log('error storing user '  + err)
-      } else {
-        alert('Welcome to QuickBuy!')
-        Actions.homeTab({type:'replace'});
-      }
-    })
-    
+    });
+    AsyncStorage.setItem('user/' + this.state.username, data)
+      .then(err => {
+        if (err) {
+          console.log('error storing user ' + err)
+        } else {
+          alert('Welcome to QuickBuy!')
+          Actions.homeTab({ type: 'replace' });
+          AsyncStorage.setItem('session', data)
+        }
+      });
   }
 
   verifyEmail(email) {

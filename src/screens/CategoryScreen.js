@@ -26,7 +26,7 @@ class CategoryScreen extends Component {
         renderItem={item => (
           <TouchableHighlight
             underlayColor='#FAFAFA'
-            onPress={() => Actions.productScreen({data: item})}
+            onPress={() => Actions.productScreen({data: item, title: item.name})}
           >
             <View style={styles.itemContainer}>
               <Image

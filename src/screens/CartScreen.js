@@ -141,7 +141,7 @@ export default class CartScreen extends Component {
 
   removeItemPressed(store, item) {
     Alert.alert(
-      'Remove ' + item.title,
+      'Remove ' + item,
       'Are you sure you want this item from your cart ?',
       [
         { text: 'No', onPress: () => console.log('No Pressed'), style: 'cancel' },
@@ -151,8 +151,19 @@ export default class CartScreen extends Component {
   }
 
   removeItem(store, itemToRemove) {
-    delete this.state.cartItems[store][itemToRemove]
+    if (Object.keys(this.state.cartItems[store]).length <= 1) {
+      delete this.state.cartItems[store]
+    } else {
+      delete this.state.cartItems[store][itemToRemove]
+    }
     this.setState({ cartItems: this.state.cartItems });
+    let total = 0;
+    for (const [store, products] of Object.entries(this.state.cartItems)) {
+      for (const [item, itemdetail] of Object.entries(products)) {
+        total += (itemdetail.quantity * itemdetail.price.unitPrice);
+      }
+    }
+    this.setState({ total: total });
     AsyncStorage.setItem("cart", JSON.stringify(this.state.cartItems));
   }
 
@@ -168,7 +179,7 @@ export default class CartScreen extends Component {
   }
 
   removeAll() {
-    this.setState({ cartItems: {} })
+    this.setState({ cartItems: {}, total: 0 })
     AsyncStorage.setItem("cart", JSON.stringify({}));
   }
 
@@ -184,12 +195,6 @@ const styles = {
     fontWeight: '100'
   }
 };
-
-const items = [
-  { id: 1, quantity: 1, title: 'Black Hat', categoryId: 5, categoryTitle: 'MEN', price: '22$', image: 'http://res.cloudinary.com/atf19/image/upload/c_crop,h_250,w_358,x_150/v1500465309/pexels-photo-206470_nwtgor.jpg', description: "Hello there, i'm a cool product with a heart of gold." },
-  { id: 2, quantity: 3, title: 'V Neck T-Shirt', categoryId: 2, categoryTitle: 'WOMEN', price: '12$', image: 'http://res.cloudinary.com/atf19/image/upload/c_crop,h_250,x_226,y_54/v1500465309/pexels-photo-521197_hg8kak.jpg', description: "Hello there, i'm a cool product with a heart of gold." },
-  { id: 10, quantity: 1, title: 'Black Leather Hat', categoryId: 1, categoryTitle: 'KIDS', price: '2$', image: 'http://res.cloudinary.com/atf19/image/upload/c_crop,g_face,h_250,x_248/v1500465308/fashion-men-s-individuality-black-and-white-157675_wnctss.jpg', description: "Hello there, i'm a cool product with a heart of gold." },
-];
 
 const Colors = {
   navbarBackgroundColor: '#2c3e50',

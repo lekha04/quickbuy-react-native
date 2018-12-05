@@ -48,7 +48,7 @@ class HomeScreen extends React.Component {
         counts[item.name] = {}
       }
       const best = _.minBy(item.price, 'unitPrice');
-      counts[item.name][best.store] = { price: best, quantity: 0 }
+      counts[item.name][best.store] = { price: best, quantity: 0, prev: 0 }
     }
     this.setState({ counts: counts })
   }
@@ -137,15 +137,26 @@ class HomeScreen extends React.Component {
   }
 
   updateCounts(item, best, value) {
+    let removal = false;
+    let prev = this.state.counts[item.name][best.store].quantity;
+    if (value < prev) {
+      removal = true;
+    }
     this.setState({
       counts: update(this.state.counts,
-        { [item.name]: { [best.store]: { quantity: { $set: value } } } })
+        { [item.name]: { 
+          [best.store]: { 
+            quantity: { $set: value },
+            prev: { $set: prev }
+          } 
+        } 
+      })
     })
-    this.addToCart();
+    this.addToCart(removal);
     return true;
   }
 
-  async addToCart() {
+  async addToCart(removal) {
     const counts = this.state.counts;
     let cart = {};
     try {
@@ -162,6 +173,11 @@ class HomeScreen extends React.Component {
     for (const [item, stores] of Object.entries(counts)) {
       for (const [store, value] of Object.entries(stores)) {
         if (value.quantity <= 0) {
+          if (cart[store] && cart[store][item] && Object.keys(cart[store]).length <= 1) {
+            delete cart[store]
+          } else if (cart[store] && cart[store][item]) {
+            delete cart[store][item];
+          }
           continue;
         }
         if (!cart[store]) {
@@ -170,7 +186,7 @@ class HomeScreen extends React.Component {
         if (!cart[store][item]) {
           cart[store][item] = value;
         } else {
-          cart[store][item].quantity += value.quantity;
+          cart[store][item].quantity = cart[store][item].quantity + value.quantity - value.prev;
         }
       }
     }
@@ -179,7 +195,11 @@ class HomeScreen extends React.Component {
     } catch (error) {
       console.log("Error saving data " + error)
     }
-    ToastAndroid.show('The item has been added to your cart!', 3000);
+    if (removal) {
+      ToastAndroid.show('The item has been updated in your cart!', 3000);
+    } else {
+      ToastAndroid.show('The item has been added to your cart!', 3000);
+    }
   }
 }
 

@@ -21,15 +21,15 @@ export default class CartScreen extends Component {
 
   static getDerivedStateFromProps(nextProps, state) {
     return {
-      cartItems: state.cartItems || nextProps.cartItems || {},
-      total: state.total || nextProps.total || 0,
+      cartItems: nextProps.cartItems || {},
+      total: nextProps.total || 0,
     };
   }
 
   static onEnter(props) {
     AsyncStorage.getItem("cart", (err, res) => {
       if (!res) {
-        Actions.refresh({ cartItems: {}, total: 0, date: new Date() });
+        Actions.refresh({ cartItems: {}, total: 0 });
         return
       }
       let total = 0;
@@ -39,26 +39,26 @@ export default class CartScreen extends Component {
           total += (itemdetail.quantity * itemdetail.price.unitPrice);
         }
       }
-      Actions.refresh({ cartItems: items, total: total.toFixed(2), date: new Date() });
+      Actions.refresh({ cartItems: items, total: total.toFixed(2) });
     });
   }
 
-  componentDidMount() {
-    AsyncStorage.getItem("cart", (err, res) => {
-      if (!res) {
-        this.setState({ cartItems: {}, total: 0 });
-        return
-      }
-      let total = 0;
-      let items = JSON.parse(res);
-      for (const [store, products] of Object.entries(items)) {
-        for (const [item, itemdetail] of Object.entries(products)) {
-          total += (itemdetail.quantity * itemdetail.price.unitPrice);
-        }
-      }
-      this.setState({ cartItems: items, total: total.toFixed(2) });
-    });
-  }
+  // componentDidMount() {
+  //   AsyncStorage.getItem("cart", (err, res) => {
+  //     if (!res) {
+  //       this.setState({ cartItems: {}, total: 0 });
+  //       return
+  //     }
+  //     let total = 0;
+  //     let items = JSON.parse(res);
+  //     for (const [store, products] of Object.entries(items)) {
+  //       for (const [item, itemdetail] of Object.entries(products)) {
+  //         total += (itemdetail.quantity * itemdetail.price.unitPrice);
+  //       }
+  //     }
+  //     this.setState({ cartItems: items, total: total.toFixed(2) });
+  //   });
+  // }
 
   render() {
     return (
@@ -128,7 +128,7 @@ export default class CartScreen extends Component {
               <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>${itemdetail.price.unitPrice}/{itemdetail.price.unitType}</Text>
             </Body>
             <Right>
-              <Text>${itemdetail.quantity * itemdetail.price.unitPrice}</Text>
+              <Text>${(itemdetail.quantity * itemdetail.price.unitPrice).toFixed(2)}</Text>
               <Button style={{ marginLeft: -25 }} transparent onPress={() => this.removeItemPressed(store, item)}>
                 <Icon size={30} style={{ fontSize: 30, color: 'red' }} name='ios-remove-circle-outline' />
               </Button>
@@ -161,8 +161,7 @@ export default class CartScreen extends Component {
     }
     let total = this.state.total - (removedItem.price.unitPrice * removedItem.quantity);
     AsyncStorage.setItem("cart", JSON.stringify(copy));
-    this.setState({ cartItems: copy, total: total.toFixed(2), refreshed: true });
-    this.forceUpdate();
+    Actions.refresh({ cartItems: copy, total: total.toFixed(2) });
   }
 
   removeAllPressed() {
@@ -177,8 +176,8 @@ export default class CartScreen extends Component {
   }
 
   removeAll() {
-    this.setState({ cartItems: {}, total: 0, refreshed: true })
     AsyncStorage.setItem("cart", JSON.stringify({}));
+    Actions.refresh({ cartItems: {}, total: 0 })
   }
 
   checkout() {

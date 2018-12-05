@@ -48,7 +48,7 @@ export default class LoginScreen extends Component {
             </Item>
             <Item>
               <Icon active name='ios-lock' style={{ color: "#687373" }} />
-              <Input placeholder='Password' onChangeText={(text) => this.setState({ password: text })} secureTextEntry={true} placeholderTextColor="#687373" />
+              <Input placeholder='Password' value={this.state.password} onChangeText={(text) => this.setState({ password: text })} secureTextEntry={true} placeholderTextColor="#687373" />
             </Item>
             {this.state.hasError ? <Text style={{ color: "#c0392b", textAlign: 'center', marginTop: 10 }}>{this.state.errorText}</Text> : null}
             <View style={{ alignItems: 'center' }}>
@@ -73,6 +73,7 @@ export default class LoginScreen extends Component {
     const value = AsyncStorage.getItem('user/' + this.state.username, (err, res) => {
       if (res != null && JSON.parse(res).password == this.state.password) {
         AsyncStorage.setItem('session', res)
+        this.setState({ hasError: false, password: ''});
         Actions.jump('homeTab');
       } else {
         this.setState({ hasError: true, errorText: 'Invalid username or password !' });
